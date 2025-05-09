@@ -30,6 +30,20 @@ async function bootstrap() {
     }),
   );
 
+  app.use((req, res, next) => {
+    res.header(
+      'Access-Control-Allow-Origin',
+      'https://oigatech-iraq.vercel.app',
+    );
+    res.header(
+      'Access-Control-Allow-Methods',
+      'GET,POST,PUT,PATCH,DELETE,OPTIONS',
+    );
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    next();
+  });
+
   app.enableCors({
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
