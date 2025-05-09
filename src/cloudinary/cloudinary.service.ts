@@ -49,10 +49,7 @@ export class CloudinaryService {
     });
   }
 
-  async uploadBuffer(
-    buffer: Buffer,
-    folder = 'qr-codes',
-  ): Promise<UploadApiResponse> {
+  async uploadBuffer(buffer: Buffer, folder): Promise<UploadApiResponse> {
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {

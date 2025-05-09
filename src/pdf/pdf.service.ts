@@ -3,6 +3,7 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  HttpException,
 } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
@@ -14,6 +15,10 @@ import * as sharp from 'sharp';
 import { Badge } from 'src/user/schemas/badge.schema';
 import path from 'path';
 import fs from 'fs';
+import { firstValueFrom } from 'rxjs';
+import * as nodemailer from 'nodemailer';
+import axios from 'axios';
+
 const drawWrappedText = (
   page,
   text,
@@ -65,6 +70,13 @@ const badgeUrls = {
 
 @Injectable()
 export class PdfService {
+  private transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'oigatech.iraq2025@gmail.com',
+      pass: 'mjwb jaws twrv bvvq',
+    },
+  });
   constructor(
     private readonly cloudinaryService: CloudinaryService,
     private readonly httpService: HttpService,
@@ -79,7 +91,8 @@ export class PdfService {
       const user = (await this.userModel
         .findById(user_id)
         .populate('image')
-        .populate('qrcode')) as FullUserType | null;
+        .populate('qrcode')
+        .populate('badge')) as FullUserType | null;
       if (!user) throw new NotFoundException('User not found');
 
       // تحميل ملف PDF الأصلي
@@ -113,9 +126,6 @@ export class PdfService {
 
       const embeddedImage = await pdfDoc.embedPng(pngImage);
       const embeddedQrcode = await pdfDoc.embedPng(pngQrcode);
-
-      const imageDims = embeddedImage.scale(1);
-      const qrcodeDims = embeddedQrcode.scale(1);
 
       pages.forEach((page) => {
         const { width, height } = page.getSize();
@@ -169,12 +179,26 @@ export class PdfService {
 
       const modifiedPdf = await pdfDoc.save();
       const modifiedBuffer = Buffer.from(modifiedPdf);
-
+      if (user.badge) {
+        await this.cloudinaryService.deleteImage(user.badge.public_id);
+      }
       const { public_id, secure_url: url } =
         await this.cloudinaryService.uploadBuffer(
           modifiedBuffer,
           'users_badges',
         );
+      if (!user.badge) {
+        const badge = await this.badgeModel.create({ public_id, url });
+        await this.userModel.updateOne(
+          { _id: user._id },
+          { badge: new Types.ObjectId(badge._id) },
+        );
+        return {
+          message: 'Badge genereted successfully.',
+          payload: badge,
+        };
+      }
+      await this.badgeModel.deleteOne({ _id: user.badge._id });
       const badge = await this.badgeModel.create({ public_id, url });
       await this.userModel.updateOne(
         { _id: user._id },
@@ -200,11 +224,152 @@ export class PdfService {
 
     const result = await this.cloudinaryService.uploadPdfFile(tempPath);
 
-    fs.unlinkSync(tempPath); // حذف الملف المؤقت بعد الرفع
+    fs.unlinkSync(tempPath);
 
     return {
       url: result.secure_url,
       public_id: result.public_id,
     };
   }
+  async sendWhatsapp(user_id: ObjectId) {
+    const whatsappApiUrl =
+      process.env.FACEBOOK_LINK || 'https://graph.facebook.com/v19.0';
+    if (!isValidObjectId(user_id))
+      throw new BadRequestException('Useer id is not valid');
+    const user = await this.userModel.findById(user_id);
+    if (!user) throw new NotFoundException('User is not found.');
+    const endpoint = `${whatsappApiUrl}/${process.env.PHONE_ID}/messages`;
+    const badge = await this.generate(user_id);
+
+    const payload = {
+      messaging_product: 'whatsapp',
+      to: user.phone_number,
+      type: 'template',
+      template: {
+        name: 'oigatech_badge',
+        language: { code: 'en_US' },
+        components: [
+          {
+            type: 'header',
+            parameters: [
+              {
+                type: 'document',
+                document: {
+                  link: badge.payload.url,
+                  filename: `${user.first_name}_oigatech_2025.pdf`,
+                },
+              },
+            ],
+          },
+          {
+            type: 'body',
+            parameters: [],
+          },
+        ],
+      },
+    };
+
+    const headers = {
+      Authorization: `Bearer ${process.env.LONG_LIVED_TOKEN}`,
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      console.log('Sending WhatsApp template...');
+      const { data } = await firstValueFrom(
+        this.httpService.post(endpoint, payload, { headers }),
+      );
+
+      return {
+        status: 'success',
+        messageId: data.messages[0]?.id,
+        timestamp: data.meta?.timestamp,
+        message: 'Badge have been sent successfully.',
+      };
+    } catch (error) {
+      console.error(
+        'WhatsApp API Error:',
+        error.response?.data || error.message,
+      );
+
+      throw new HttpException(
+        {
+          status: 'error',
+          error: error.response?.data?.error || {
+            message: 'Failed to send WhatsApp template',
+            details: error.message,
+          },
+        },
+        error.response?.status || 500,
+      );
+    }
+  }
+  async sendEmail(user_id: ObjectId) {
+    if (!isValidObjectId(user_id))
+      throw new BadRequestException('Useer id is not valid');
+    const user = await this.userModel.findById(user_id);
+    if (!user) throw new NotFoundException('User is not found.');
+    const badge = await this.generate(user._id as unknown as ObjectId);
+    const mailOptions = {
+      from: 'oigatech.iraq2025@gmail.com',
+      to: user.email,
+      subject: 'Your IQDEX 2025 Entry Badge',
+      text: `Hello,
+Your IQDEX 2025 entry badge is ready.
+
+Download the attached badge and show it at the entrance.
+
+📌 Note: Keep it on your phone or print it.
+
+For inquiries, contact us.
+
+IQDEX 2025 Team
+
+مرحبًا،
+باج الدخول لمعرض IQDEX 2025 جاهز.
+
+حمّل الباج المرفق وأظهره عند الدخول.
+
+📌 ملاحظة: احتفظ به على هاتفك أو اطبعه.
+`,
+      attachments: [
+        {
+          filename: `${user.first_name}_${user.last_name}_oigatech_2025.pdf`,
+          path: badge.payload.url,
+          contentType: 'application/pdf',
+        },
+      ],
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      return {
+        message: 'Badge have been sent successfully.',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+  getLongLivedToken = async () => {
+    try {
+      const response = await axios.get(
+        `https://graph.facebook.com/v19.0/oauth/access_token`,
+        {
+          params: {
+            grant_type: 'fb_exchange_token',
+            client_id: process.env.APP_ID,
+            client_secret: process.env.APP_SECRET,
+            fb_exchange_token: process.env.SHORT_TIME_TOKEN,
+          },
+        },
+      );
+
+      console.log('Long-Lived Token:', response.data.access_token);
+      console.log('Expires in (seconds):', response.data.expires_in); // 5184000 = 60 يومًا
+      return response.data.access_token;
+    } catch (error) {
+      console.error('Error:', error.response?.data || error.message);
+      throw error;
+    }
+  };
 }

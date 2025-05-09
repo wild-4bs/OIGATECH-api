@@ -31,7 +31,7 @@ export class UserService {
     private readonly qrcodeService: QrcodeService,
   ) {}
   //   Fetch
-  async findAll(page = 1, limit = 10, email?: string, status?: string) {
+  async findAll(page = 1, limit = 30, email?: string, status?: string) {
     const filter: Record<string, any> = {};
 
     if (email) {
@@ -102,7 +102,7 @@ export class UserService {
       );
 
       const { public_id: qrcode_id, secure_url: qrcode_url } =
-        await this.cloudinaryService.uploadBuffer(buffer);
+        await this.cloudinaryService.uploadBuffer(buffer, "qr-codes");
       const createdQrcode = await this.qrcodeModel.create({
         public_id: qrcode_id,
         url: qrcode_url,
@@ -192,7 +192,7 @@ export class UserService {
         `,
       );
       const { public_id, secure_url } =
-        await this.cloudinaryService.uploadBuffer(buffer);
+        await this.cloudinaryService.uploadBuffer(buffer, 'qr-codes');
       await this.qrcodeModel.updateOne(
         { _id: user.qrcode._id },
         {

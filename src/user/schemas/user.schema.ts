@@ -32,6 +32,14 @@ export type FullUserType = {
     name: string;
     users_limit: number;
   };
+  badge: {
+    _id: string;
+    url: string;
+    public_id: string;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+  };
   createdAt: string;
   updatedAt: string;
   __v: number;

@@ -24,7 +24,8 @@ import { PdfModule } from 'src/pdf/pdf.module';
     QrcodeModule,
     CompanyModule,
     AdminModule,
-    forwardRef(() => PdfModule),
+    PdfModule,
+    
   ],
   controllers: [UserController],
   providers: [UserService],

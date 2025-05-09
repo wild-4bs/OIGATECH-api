@@ -6,6 +6,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
   Res,
   UploadedFile,
   UseInterceptors,
@@ -18,6 +19,7 @@ import { HttpService } from '@nestjs/axios';
 import { Badge } from 'src/user/schemas/badge.schema';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
+import axios from 'axios';
 
 @Controller('pdf')
 export class PdfController {
@@ -51,5 +53,31 @@ export class PdfController {
     });
     res.send(response?.data);
     return { user };
+  }
+  @Post('/debug')
+  async debugToken() {
+    const response = await axios.get(`https://graph.facebook.com/debug_token`, {
+      params: {
+        input_token: process.env.LONG_LIVED_TOKEN,
+        access_token: `${process.env.APP_ID}|${process.env.APP_SECRET}`,
+      },
+    });
+    return response.data;
+  }
+  @Post('/send/:id')
+  sendPdf(
+    @Param('id') id: ObjectId,
+    @Query('send_via') send_via: 'whatsapp' | 'email',
+  ) {
+    if (send_via !== 'whatsapp' && send_via !== 'email')
+      throw new BadRequestException(
+        'Send via must be either by whatsapp or email.',
+      );
+    if (send_via == 'whatsapp') return this.pdfService.sendWhatsapp(id);
+    if (send_via == 'email') return this.pdfService.sendEmail(id);
+  }
+  @Get('long_lived_token')
+  longLivedToken() {
+    return this.pdfService.getLongLivedToken();
   }
 }
