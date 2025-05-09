@@ -9,6 +9,8 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 import { UserModule } from 'src/user/user.module';
 import { HttpModule } from '@nestjs/axios';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { HttpModule } from '@nestjs/axios';
     ]),
     CloudinaryModule,
     HttpModule,
+    PassportModule,
+    JwtModule,
   ],
   providers: [PdfService],
   controllers: [PdfController],

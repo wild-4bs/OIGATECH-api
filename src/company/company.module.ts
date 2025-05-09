@@ -5,6 +5,8 @@ import { CompanySchema } from './schemas/company.schema';
 import { CompanyService } from './company.service';
 import { UserModule } from 'src/user/user.module';
 import { userSchema } from 'src/user/schemas/user.schema';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -12,6 +14,8 @@ import { userSchema } from 'src/user/schemas/user.schema';
       { name: 'Company', schema: CompanySchema },
       { name: 'User', schema: userSchema },
     ]),
+    PassportModule,
+    JwtModule,
   ],
   controllers: [CompanyController],
   providers: [CompanyService],

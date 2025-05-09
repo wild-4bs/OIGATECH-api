@@ -11,6 +11,8 @@ import { QrcodeModule } from 'src/qrcode/qrcode.module';
 import { CompanyModule } from 'src/company/company.module';
 import { AdminModule } from 'src/admin/admin.module';
 import { PdfModule } from 'src/pdf/pdf.module';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -25,7 +27,8 @@ import { PdfModule } from 'src/pdf/pdf.module';
     CompanyModule,
     AdminModule,
     PdfModule,
-    
+    PassportModule,
+    JwtModule,
   ],
   controllers: [UserController],
   providers: [UserService],
