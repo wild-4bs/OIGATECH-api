@@ -162,7 +162,7 @@ export class UserService {
       if (image) {
         await this.cloudinaryService.deleteImage(user?.image?.public_id);
         if (user.badge) {
-          await this.cloudinaryService.deleteImage(user.badge.url);
+          await this.cloudinaryService.deleteImage(user.badge?.public_id);
         }
         await this.imageModel.deleteOne({
           _id: user?.image?._id,
@@ -222,7 +222,7 @@ export class UserService {
     await this.cloudinaryService.deleteImage(user?.image?.public_id);
     await this.cloudinaryService.deleteImage(user?.qrcode?.public_id);
     if (user.badge) {
-      await this.cloudinaryService.deleteImage(user.badge.url);
+      await this.cloudinaryService.deleteImage(user.badge?.public_id);
     }
     await this.userModel.deleteOne({ _id: id });
     return {
