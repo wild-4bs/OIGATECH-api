@@ -40,6 +40,7 @@ export class UserController {
     return this.userService.findAll(page, limit, email, status);
   }
   @Get(':id')
+  @UseGuards(AuthGuard())
   findOne(@Param('id') id: ObjectId) {
     return this.userService.findOne(id);
   }
@@ -54,6 +55,7 @@ export class UserController {
   }
 
   @Put(':id')
+  @UseGuards(AuthGuard())
   @UseInterceptors(FileInterceptor('image'))
   updateOne(
     @Param('id') id: ObjectId,
@@ -64,19 +66,23 @@ export class UserController {
   }
 
   @Put('/accept/:id')
+  @UseGuards(AuthGuard())
   acceptUser(@Param('id') id: ObjectId) {
     return this.userService.acceptUser(id);
   }
   @Put('/reject/:id')
+  @UseGuards(AuthGuard())
   rejectUser(@Param('id') id: ObjectId) {
     return this.userService.rejectUser(id);
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard())
   deleteOne(@Param('id') id: ObjectId) {
     return this.userService.deleteOne(id);
   }
   @Delete()
+  @UseGuards(AuthGuard())
   deleteAll() {
     return this.userService.deleteAll();
   }

@@ -23,13 +23,25 @@ export class CompanyService {
     const skip = (page - 1) * limit;
 
     const [companies, total] = await Promise.all([
-      this.companyModel.find(matchStage).populate('users').skip(skip),
+      this.companyModel
+        .find(matchStage)
+        .skip(skip)
+        .limit(limit)
+        .populate('users'),
       this.companyModel.countDocuments(matchStage),
     ]);
     return {
       message: 'Companies have been fetched successfully.',
       payload: companies,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  async findAll() {
+    const companies = await this.companyModel.find();
+    return {
+      message: 'Companies have been fetched successfully.',
+      payload: companies,
     };
   }
 

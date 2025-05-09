@@ -9,6 +9,7 @@ import {
   Query,
   Res,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { PdfService } from './pdf.service';
@@ -20,6 +21,7 @@ import { Badge } from 'src/user/schemas/badge.schema';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import axios from 'axios';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('pdf')
 export class PdfController {
@@ -65,6 +67,7 @@ export class PdfController {
     return response.data;
   }
   @Post('/send/:id')
+  @UseGuards(AuthGuard())
   sendPdf(
     @Param('id') id: ObjectId,
     @Query('send_via') send_via: 'whatsapp' | 'email',
@@ -77,6 +80,7 @@ export class PdfController {
     if (send_via == 'email') return this.pdfService.sendEmail(id);
   }
   @Get('long_lived_token')
+  @UseGuards(AuthGuard())
   longLivedToken() {
     return this.pdfService.getLongLivedToken();
   }
