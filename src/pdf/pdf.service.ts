@@ -129,8 +129,8 @@ export class PdfService {
 
       pages.forEach((page) => {
         const { width, height } = page.getSize();
-        const maxWidth = 100;
-        const fontSize = 15;
+        const maxWidth = 230;
+        const fontSize = 12;
 
         page.drawImage(embeddedImage, {
           x: width - 395,

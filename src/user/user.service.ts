@@ -102,7 +102,7 @@ export class UserService {
       );
 
       const { public_id: qrcode_id, secure_url: qrcode_url } =
-        await this.cloudinaryService.uploadBuffer(buffer, "qr-codes");
+        await this.cloudinaryService.uploadBuffer(buffer, 'qr-codes');
       const createdQrcode = await this.qrcodeModel.create({
         public_id: qrcode_id,
         url: qrcode_url,
