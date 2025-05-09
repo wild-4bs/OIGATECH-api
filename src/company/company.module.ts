@@ -7,6 +7,8 @@ import { UserModule } from 'src/user/user.module';
 import { userSchema } from 'src/user/schemas/user.schema';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { jwtStrategy } from 'src/admin/jwt.strategy';
 
 @Module({
   imports: [
@@ -14,11 +16,11 @@ import { JwtModule } from '@nestjs/jwt';
       { name: 'Company', schema: CompanySchema },
       { name: 'User', schema: userSchema },
     ]),
-    PassportModule,
     JwtModule,
+    PassportModule,
   ],
   controllers: [CompanyController],
-  providers: [CompanyService],
-  exports: [MongooseModule],
+  providers: [CompanyService, jwtStrategy],
+  exports: [MongooseModule, PassportModule, JwtModule],
 })
 export class CompanyModule {}

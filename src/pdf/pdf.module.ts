@@ -11,6 +11,7 @@ import { UserModule } from 'src/user/user.module';
 import { HttpModule } from '@nestjs/axios';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import { jwtStrategy } from 'src/admin/jwt.strategy';
 
 @Module({
   imports: [
@@ -23,8 +24,8 @@ import { JwtModule } from '@nestjs/jwt';
     PassportModule,
     JwtModule,
   ],
-  providers: [PdfService],
+  providers: [PdfService, jwtStrategy],
   controllers: [PdfController],
-  exports: [PdfService],
+  exports: [PdfService, jwtStrategy, PassportModule],
 })
 export class PdfModule {}

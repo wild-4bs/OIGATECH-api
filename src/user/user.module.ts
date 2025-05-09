@@ -13,6 +13,7 @@ import { AdminModule } from 'src/admin/admin.module';
 import { PdfModule } from 'src/pdf/pdf.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import { jwtStrategy } from 'src/admin/jwt.strategy';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { JwtModule } from '@nestjs/jwt';
     JwtModule,
   ],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, jwtStrategy],
+  exports: [PassportModule, jwtStrategy],
 })
 export class UserModule {}
