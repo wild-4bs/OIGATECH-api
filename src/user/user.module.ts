@@ -12,8 +12,6 @@ import { CompanyModule } from 'src/company/company.module';
 import { AdminModule } from 'src/admin/admin.module';
 import { PdfModule } from 'src/pdf/pdf.module';
 import { PassportModule } from '@nestjs/passport';
-import { JwtModule } from '@nestjs/jwt';
-import { jwtStrategy } from 'src/admin/jwt.strategy';
 
 @Module({
   imports: [
@@ -29,10 +27,8 @@ import { jwtStrategy } from 'src/admin/jwt.strategy';
     AdminModule,
     PdfModule,
     PassportModule,
-    JwtModule,
   ],
   controllers: [UserController],
-  providers: [UserService, jwtStrategy],
-  exports: [PassportModule, jwtStrategy],
+  providers: [UserService],
 })
 export class UserModule {}

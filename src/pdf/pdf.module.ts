@@ -5,16 +5,14 @@ import { PdfController } from './pdf.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, userSchema } from 'src/user/schemas/user.schema';
 import { Badge, badgeSchema } from 'src/user/schemas/badge.schema';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
-import { UserModule } from 'src/user/user.module';
 import { HttpModule } from '@nestjs/axios';
 import { PassportModule } from '@nestjs/passport';
-import { JwtModule } from '@nestjs/jwt';
-import { jwtStrategy } from 'src/admin/jwt.strategy';
+import { AdminModule } from 'src/admin/admin.module';
 
 @Module({
   imports: [
+    AdminModule,
     MongooseModule.forFeature([
       { name: User.name, schema: userSchema },
       { name: Badge.name, schema: badgeSchema },
@@ -22,10 +20,9 @@ import { jwtStrategy } from 'src/admin/jwt.strategy';
     CloudinaryModule,
     HttpModule,
     PassportModule,
-    JwtModule,
   ],
-  providers: [PdfService, jwtStrategy],
+  providers: [PdfService],
   controllers: [PdfController],
-  exports: [PdfService, jwtStrategy, PassportModule],
+  exports: [PdfService],
 })
 export class PdfModule {}
