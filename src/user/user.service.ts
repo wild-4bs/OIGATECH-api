@@ -161,8 +161,8 @@ export class UserService {
     try {
       if (image) {
         await this.cloudinaryService.deleteImage(user?.image?.public_id);
-        if (user.badge) {
-          await this.cloudinaryService.deleteImage(user.badge?.public_id);
+        if (user?.badge?.public_id) {
+          await this.cloudinaryService.deleteImage(user?.badge?.public_id);
         }
         await this.imageModel.deleteOne({
           _id: user?.image?._id,
@@ -221,8 +221,8 @@ export class UserService {
     if (!user) throw new NotFoundException('User not found.');
     await this.cloudinaryService.deleteImage(user?.image?.public_id);
     await this.cloudinaryService.deleteImage(user?.qrcode?.public_id);
-    if (user.badge) {
-      await this.cloudinaryService.deleteImage(user.badge?.public_id);
+    if (user?.badge?.public_id) {
+      await this.cloudinaryService.deleteImage(user?.badge?.public_id);
     }
     await this.userModel.deleteOne({ _id: id });
     return {
