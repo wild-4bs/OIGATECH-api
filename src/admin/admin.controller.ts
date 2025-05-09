@@ -31,7 +31,7 @@ export class AdminController {
     return this.adminService.badgeCondition();
   }
   @Post('/expireBadge')
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard('jwt'))
   expire() {
     return this.adminService.expireBadge();
   }
