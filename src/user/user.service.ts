@@ -217,11 +217,12 @@ export class UserService {
     const user = (await this.userModel
       .findById(id)
       .populate('image')
-      .populate('qrcode')) as FullUserType | null;
+      .populate('qrcode')
+      .populate('badge')) as FullUserType | null;
     if (!user) throw new NotFoundException('User not found.');
     await this.cloudinaryService.deleteImage(user?.image?.public_id);
     await this.cloudinaryService.deleteImage(user?.qrcode?.public_id);
-    if (user?.badge?.public_id) {
+    if (user?.badge) {
       await this.cloudinaryService.deleteImage(user?.badge?.public_id);
     }
     await this.userModel.deleteOne({ _id: id });

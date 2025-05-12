@@ -31,10 +31,10 @@ export class PdfController {
     private pdfService: PdfService,
   ) {}
 
-  @Post('upload')
+  @Post('/upload')
   @UseInterceptors(FileInterceptor('file'))
   upload(@UploadedFile() image: Express.Multer.File) {
-    return this.upload(image);
+    return this.pdfService.handlePdfUpload(image);
   }
   @Get('/download/:id')
   async downloadPdf(@Param('id') id: ObjectId, @Res() res: Response) {

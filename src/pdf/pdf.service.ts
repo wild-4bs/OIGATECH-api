@@ -13,8 +13,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { PDFDocument } from 'pdf-lib';
 import * as sharp from 'sharp';
 import { Badge } from 'src/user/schemas/badge.schema';
-import path from 'path';
-import fs from 'fs';
+import * as path from 'path';
+import * as fs from 'fs';
 import { firstValueFrom } from 'rxjs';
 import * as nodemailer from 'nodemailer';
 import axios from 'axios';
@@ -59,13 +59,13 @@ const drawWrappedText = (
 
 const badgeUrls = {
   visitor:
-    'https://res.cloudinary.com/dfdm8lx7v/raw/upload/v1746622659/users_badges/xcmjruegcdtrkazqojq9.pdf',
+    'https://res.cloudinary.com/dfdm8lx7v/raw/upload/v1747061509/main-badges/hrv1mkv5lxzwch1da2g5.pdf',
   exhibitor:
-    'https://res.cloudinary.com/dfdm8lx7v/raw/upload/v1746622507/users_badges/vrqyocaa7khaomjxilqt.pdf',
+    'https://res.cloudinary.com/dfdm8lx7v/raw/upload/v1747061529/main-badges/vdcbpwidtvepc1buho9k.pdf',
   press:
-    'https://res.cloudinary.com/dfdm8lx7v/raw/upload/v1746622681/users_badges/gqx8paiur02xhszcvtat.pdf',
+    'https://res.cloudinary.com/dfdm8lx7v/raw/upload/v1747061517/main-badges/le4qlk3ldl0wwlpknse8.pdf',
   organizer:
-    'https://res.cloudinary.com/dfdm8lx7v/raw/upload/v1746622706/users_badges/mfoo0wd3hm6wx1gs0p3h.pdf',
+    'https://res.cloudinary.com/dfdm8lx7v/raw/upload/v1747061498/main-badges/f7nvgereunzefhzbtwl5.pdf',
 };
 
 @Injectable()
@@ -179,6 +179,7 @@ export class PdfService {
 
       const modifiedPdf = await pdfDoc.save();
       const modifiedBuffer = Buffer.from(modifiedPdf);
+      console.log(user);
       if (user.badge) {
         await this.cloudinaryService.deleteImage(user.badge.public_id);
       }
@@ -219,12 +220,10 @@ export class PdfService {
       throw new BadRequestException('Only PDF files are allowed');
     }
 
-    const tempPath = path.resolve(`public/${Date.now()}-${file.originalname}`);
-    fs.writeFileSync(tempPath, file.buffer);
-
-    const result = await this.cloudinaryService.uploadPdfFile(tempPath);
-
-    fs.unlinkSync(tempPath);
+    const result = await this.cloudinaryService.uploadPdfFile(
+      file.buffer,
+      'main-badges',
+    );
 
     return {
       url: result.secure_url,

@@ -1,4 +1,3 @@
-// cloudinary.service.ts
 import { Injectable, Inject } from '@nestjs/common';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 import * as bufferToStream from 'buffer-to-stream';
@@ -28,9 +27,8 @@ export class CloudinaryService {
               quality: 30,
             },
             {
-              quality: 35, // ضغط قوي جداً
+              quality: 35,
               fetch_format: 'webp',
-              // flags: 'layer_apply',
             },
           ],
           eager_async: true,
@@ -88,12 +86,15 @@ export class CloudinaryService {
     }
   }
 
-  async uploadPdfFile(buffer): Promise<UploadApiResponse> {
+  async uploadPdfFile(
+    buffer: Buffer,
+    folder?: string,
+  ): Promise<UploadApiResponse> {
     return new Promise((resolve, reject) => {
       const uploadStream = this.cloudinaryInstance.uploader.upload_stream(
         {
           resource_type: 'raw',
-          folder: 'user_badges',
+          folder: folder || 'user_badges',
           format: 'pdf',
         },
         (error, result) => {
@@ -102,6 +103,7 @@ export class CloudinaryService {
         },
       );
 
+      // Use Readable.from to convert buffer to a readable stream
       Readable.from(buffer).pipe(uploadStream);
     });
   }

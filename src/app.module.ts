@@ -8,7 +8,6 @@ import { QrcodeModule } from './qrcode/qrcode.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { CompanyModule } from './company/company.module';
 import { PdfModule } from './pdf/pdf.module';
-import { AdminController } from './admin/admin.controller';
 import { AdminModule } from './admin/admin.module';
 
 @Module({
