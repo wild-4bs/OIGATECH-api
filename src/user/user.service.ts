@@ -45,6 +45,7 @@ export class UserService {
     const [users, total] = await Promise.all([
       this.userModel
         .find(filter)
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .populate('image')

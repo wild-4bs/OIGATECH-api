@@ -237,6 +237,8 @@ export class PdfService {
       throw new BadRequestException('Useer id is not valid');
     const user = await this.userModel.findById(user_id);
     if (!user) throw new NotFoundException('User is not found.');
+    if (user.status != 'accepted')
+      throw new BadRequestException('User is not accepted yet.');
     const endpoint = `${whatsappApiUrl}/${process.env.PHONE_ID}/messages`;
     const badge = await this.generate(user_id);
 
@@ -308,6 +310,8 @@ export class PdfService {
       throw new BadRequestException('Useer id is not valid');
     const user = await this.userModel.findById(user_id);
     if (!user) throw new NotFoundException('User is not found.');
+    if (user.status != 'accepted')
+      throw new BadRequestException('User is not accepted yet.');
     const badge = await this.generate(user._id as unknown as ObjectId);
     const mailOptions = {
       from: 'oigatech.iraq2025@gmail.com',
