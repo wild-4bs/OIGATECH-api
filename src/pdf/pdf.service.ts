@@ -15,7 +15,7 @@ import * as sharp from 'sharp';
 import { Badge } from 'src/user/schemas/badge.schema';
 import * as path from 'path';
 import * as fs from 'fs';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, throwError } from 'rxjs';
 import * as nodemailer from 'nodemailer';
 import axios from 'axios';
 
@@ -85,121 +85,115 @@ export class PdfService {
   ) {}
 
   async generate(user_id: ObjectId) {
-    try {
-      if (!isValidObjectId(user_id))
-        throw new BadRequestException('Invalid user id');
-      const user = (await this.userModel
-        .findById(user_id)
-        .populate('image')
-        .populate('qrcode')
-        .populate('badge')) as FullUserType | null;
-      if (!user) throw new NotFoundException('User not found');
+    if (!isValidObjectId(user_id))
+      throw new BadRequestException('Invalid user id');
+    const user = (await this.userModel
+      .findById(user_id)
+      .populate('image')
+      .populate('qrcode')
+      .populate('badge')) as FullUserType | null;
+    if (!user) throw new NotFoundException('User not found');
+    const response = await this.httpService
+      .get(badgeUrls[user.participation_type], {
+        responseType: 'arraybuffer',
+      })
+      .toPromise();
 
-      // تحميل ملف PDF الأصلي
-      const response = await this.httpService
-        .get(badgeUrls[user.participation_type], {
-          responseType: 'arraybuffer',
-        })
-        .toPromise();
+    if (!response?.data) {
+      throw new Error('Failed to download PDF file');
+    }
 
-      if (!response?.data) {
-        throw new Error('Failed to download PDF file');
-      }
+    const imageResopnse = await this.httpService
+      .get(user?.image?.url, {
+        responseType: 'arraybuffer',
+      })
+      .toPromise();
 
-      const imageResopnse = await this.httpService
-        .get(user?.image?.url, {
-          responseType: 'arraybuffer',
-        })
-        .toPromise();
+    const qrcodeResponse = await this.httpService
+      .get(user?.qrcode?.url, {
+        responseType: 'arraybuffer',
+      })
+      .toPromise();
 
-      const qrcodeResponse = await this.httpService
-        .get(user?.qrcode?.url, {
-          responseType: 'arraybuffer',
-        })
-        .toPromise();
+    const pngImage = await sharp(imageResopnse?.data).png().toBuffer();
+    const pngQrcode = await sharp(qrcodeResponse?.data).png().toBuffer();
 
-      const pngImage = await sharp(imageResopnse?.data).png().toBuffer();
-      const pngQrcode = await sharp(qrcodeResponse?.data).png().toBuffer();
+    const pdfDoc = await PDFDocument.load(response.data);
+    const pages = pdfDoc.getPages();
 
-      const pdfDoc = await PDFDocument.load(response.data);
-      const pages = pdfDoc.getPages();
+    const embeddedImage = await pdfDoc.embedPng(pngImage);
+    const embeddedQrcode = await pdfDoc.embedPng(pngQrcode);
 
-      const embeddedImage = await pdfDoc.embedPng(pngImage);
-      const embeddedQrcode = await pdfDoc.embedPng(pngQrcode);
+    pages.forEach((page) => {
+      const { width, height } = page.getSize();
+      const maxWidth = 230;
+      const fontSize = 12;
 
-      pages.forEach((page) => {
-        const { width, height } = page.getSize();
-        const maxWidth = 230;
-        const fontSize = 12;
-
-        page.drawImage(embeddedImage, {
-          x: width - 395,
-          y: height - 178,
-          width: 90,
-          height: 90,
-        });
-
-        page.drawImage(embeddedQrcode, {
-          x: width - 374,
-          y: height - 356,
-          width: 70,
-          height: 70,
-        });
-
-        let currentY = height - 206;
-        currentY = drawWrappedText(
-          page,
-          `${user.first_name} ${user.last_name}`,
-          20,
-          currentY,
-          maxWidth,
-          fontSize,
-        );
-
-        currentY -= 20;
-        currentY = drawWrappedText(
-          page,
-          user.position,
-          20,
-          currentY - 18,
-          maxWidth,
-          fontSize,
-        );
-
-        currentY -= 20;
-        drawWrappedText(
-          page,
-          user.company_name,
-          20,
-          currentY - 24,
-          maxWidth,
-          fontSize,
-        );
+      page.drawImage(embeddedImage, {
+        x: width - 395,
+        y: height - 178,
+        width: 90,
+        height: 90,
       });
 
-      const modifiedPdf = await pdfDoc.save();
-      const modifiedBuffer = Buffer.from(modifiedPdf);
-      console.log(user);
-      if (user.badge) {
-        await this.cloudinaryService.deleteImage(user.badge.public_id);
-      }
-      const { public_id, secure_url: url } =
-        await this.cloudinaryService.uploadBuffer(
-          modifiedBuffer,
-          'users_badges',
-        );
-      if (!user.badge) {
-        const badge = await this.badgeModel.create({ public_id, url });
-        await this.userModel.updateOne(
-          { _id: user._id },
-          { badge: new Types.ObjectId(badge._id) },
-        );
-        return {
-          message: 'Badge genereted successfully.',
-          payload: badge,
-        };
-      }
-      await this.badgeModel.deleteOne({ _id: user.badge._id });
+      page.drawImage(embeddedQrcode, {
+        x: width - 374,
+        y: height - 356,
+        width: 70,
+        height: 70,
+      });
+
+      let currentY = height - 203;
+      currentY = drawWrappedText(
+        page,
+        `${user.first_name} ${user.last_name}`,
+        20,
+        currentY,
+        maxWidth,
+        fontSize,
+      );
+
+      currentY -= 20;
+      currentY = drawWrappedText(
+        page,
+        user.position,
+        20,
+        currentY - 21,
+        maxWidth,
+        fontSize,
+      );
+
+      currentY -= 20;
+      drawWrappedText(
+        page,
+        user.company_name,
+        20,
+        currentY - 27,
+        maxWidth,
+        fontSize,
+      );
+    });
+
+    const modifiedPdf = await pdfDoc.save();
+    const modifiedBuffer = Buffer.from(modifiedPdf);
+    const fileSizeInBytes = modifiedBuffer.length;
+
+    const fileSizeInMB = fileSizeInBytes / (1024 * 1024);
+
+    if (fileSizeInMB > 10)
+      throw new BadRequestException(
+        'Pdf size is larger than 10mb please try again with another image.',
+      );
+
+    if (user.badge) {
+      await this.cloudinaryService.deletePdfFile(user.badge.public_id);
+    }
+    const { public_id, secure_url: url } =
+      await this.cloudinaryService.uploadPdfFile(
+        modifiedBuffer,
+        'users_badges',
+      );
+    if (!user.badge) {
       const badge = await this.badgeModel.create({ public_id, url });
       await this.userModel.updateOne(
         { _id: user._id },
@@ -209,10 +203,19 @@ export class PdfService {
         message: 'Badge genereted successfully.',
         payload: badge,
       };
-    } catch (error) {
-      throw new Error(`PDF processing failed: ${error.message}`);
     }
+    await this.badgeModel.deleteOne({ _id: user.badge._id });
+    const badge = await this.badgeModel.create({ public_id, url });
+    await this.userModel.updateOne(
+      { _id: user._id },
+      { badge: new Types.ObjectId(badge._id) },
+    );
+    return {
+      message: 'Badge genereted successfully.',
+      payload: badge,
+    };
   }
+  // Upload pdf
   async handlePdfUpload(file: Express.Multer.File) {
     if (!file) throw new BadRequestException('No file uploaded');
 
@@ -230,6 +233,7 @@ export class PdfService {
       public_id: result.public_id,
     };
   }
+  // Whatsapp sender
   async sendWhatsapp(user_id: ObjectId) {
     const whatsappApiUrl =
       process.env.FACEBOOK_LINK || 'https://graph.facebook.com/v19.0';
@@ -305,6 +309,7 @@ export class PdfService {
       );
     }
   }
+  // Email sender
   async sendEmail(user_id: ObjectId) {
     if (!isValidObjectId(user_id))
       throw new BadRequestException('Useer id is not valid');

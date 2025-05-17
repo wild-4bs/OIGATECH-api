@@ -18,6 +18,7 @@ import { Company } from 'src/company/schemas/company.schema';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as sharp from 'sharp';
 
 @Injectable()
 export class UserService {
@@ -83,8 +84,12 @@ export class UserService {
           message: 'Image is required',
           fieldErrors: { image: 'Image is required.' },
         });
+      const result = await sharp(image.buffer)
+        .resize(800)
+        .webp({ quality: 10, effort: 6 })
+        .toBuffer();
       const { public_id, secure_url } =
-        await this.cloudinaryService.uploadImage(image);
+        await this.cloudinaryService.uploadBuffer(result, 'users');
       const createdImage = await this.imageModel.create({
         url: secure_url,
         public_id,
@@ -163,7 +168,7 @@ export class UserService {
       if (image) {
         await this.cloudinaryService.deleteImage(user?.image?.public_id);
         if (user?.badge?.public_id) {
-          await this.cloudinaryService.deleteImage(user?.badge?.public_id);
+          await this.cloudinaryService.deletePdfFile(user?.badge?.public_id);
         }
         await this.imageModel.deleteOne({
           _id: user?.image?._id,
@@ -224,7 +229,8 @@ export class UserService {
     await this.cloudinaryService.deleteImage(user?.image?.public_id);
     await this.cloudinaryService.deleteImage(user?.qrcode?.public_id);
     if (user?.badge) {
-      await this.cloudinaryService.deleteImage(user?.badge?.public_id);
+      console.log('badge is here and getting deleted');
+      await this.cloudinaryService.deletePdfFile(user.badge.public_id);
     }
     await this.userModel.deleteOne({ _id: id });
     return {

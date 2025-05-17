@@ -15,6 +15,7 @@ export class CloudinaryService {
       const uploadStream = this.cloudinaryInstance.uploader.upload_stream(
         {
           folder: 'users',
+          overwrite: true,
           transformation: [
             {
               fetch_format: 'webp',
@@ -54,12 +55,11 @@ export class CloudinaryService {
           folder,
           resource_type: 'image',
           transformation: [
-            {
-              quality: 40, // ضغط متحكم به بنسبة 80%
-              format: 'webp', // إجبار التنسيق على webp
-              effect: 'improve:outdoor', // تحسين تلقائي للألوان
-            },
+            { width: 800, crop: 'limit' },
+            { quality: 'auto:good', fetch_format: 'webp' },
+            { effect: 'sharpen:30' },
           ],
+          overwrite: true,
         },
         (error, result) => {
           error
@@ -96,15 +96,24 @@ export class CloudinaryService {
           resource_type: 'raw',
           folder: folder || 'user_badges',
           format: 'pdf',
+          overwrite: true,
         },
+
         (error, result) => {
           if (error) return reject(error);
           result ? resolve(result) : reject(new Error('نتيجة الرفع غير محددة'));
         },
       );
-
-      // Use Readable.from to convert buffer to a readable stream
       Readable.from(buffer).pipe(uploadStream);
+    });
+  }
+
+  async deletePdfFile(public_id: string) {
+    console.log(public_id);
+    return this.cloudinaryInstance.uploader.destroy(public_id, {
+      resource_type: 'raw',
+      type: 'upload',
+      invalidate: true,
     });
   }
 }
