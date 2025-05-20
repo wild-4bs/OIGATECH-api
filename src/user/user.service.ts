@@ -19,6 +19,7 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as sharp from 'sharp';
+import { PDFDocument } from 'pdf-lib';
 
 @Injectable()
 export class UserService {
@@ -266,5 +267,9 @@ export class UserService {
     return {
       message: 'User have been rejected successfully.',
     };
+  }
+
+  async findAllWithoutPagination() {
+    return this.userModel.find();
   }
 }
