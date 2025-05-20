@@ -13,9 +13,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { PDFDocument } from 'pdf-lib';
 import * as sharp from 'sharp';
 import { Badge } from 'src/user/schemas/badge.schema';
-import * as path from 'path';
-import * as fs from 'fs';
-import { firstValueFrom, throwError } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import * as nodemailer from 'nodemailer';
 import axios from 'axios';
 
@@ -59,13 +57,13 @@ const drawWrappedText = (
 
 const badgeUrls = {
   visitor:
-    'https://res.cloudinary.com/dfdm8lx7v/raw/upload/v1747061509/main-badges/hrv1mkv5lxzwch1da2g5.pdf',
+    'https://res.cloudinary.com/oigatech-cloud/raw/upload/v1747721730/main-badges/aask9vxfscgehptwrcec.pdf',
   exhibitor:
-    'https://res.cloudinary.com/dfdm8lx7v/raw/upload/v1747061529/main-badges/vdcbpwidtvepc1buho9k.pdf',
+    'https://res.cloudinary.com/oigatech-cloud/raw/upload/v1747721778/main-badges/d2hlumipjecnuijruv1i.pdf',
   press:
-    'https://res.cloudinary.com/dfdm8lx7v/raw/upload/v1747061517/main-badges/le4qlk3ldl0wwlpknse8.pdf',
+    'https://res.cloudinary.com/oigatech-cloud/raw/upload/v1747721815/main-badges/hld4id2i4twfybilnotn.pdf',
   organizer:
-    'https://res.cloudinary.com/dfdm8lx7v/raw/upload/v1747061498/main-badges/f7nvgereunzefhzbtwl5.pdf',
+    'https://res.cloudinary.com/oigatech-cloud/raw/upload/v1747721840/main-badges/dupqyzzinyccxhnfvdct.pdf',
 };
 
 @Injectable()
