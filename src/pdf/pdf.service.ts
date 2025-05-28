@@ -57,13 +57,13 @@ const drawWrappedText = (
 
 const badgeUrls = {
   visitor:
-    'https://res.cloudinary.com/oigatech-cloud/raw/upload/v1747721730/main-badges/aask9vxfscgehptwrcec.pdf',
+    'https://res.cloudinary.com/oigatech-cloud/raw/upload/v1748440352/main-badges/mtnflgatdskmaokhlrkl.pdf',
   exhibitor:
-    'https://res.cloudinary.com/oigatech-cloud/raw/upload/v1747721778/main-badges/d2hlumipjecnuijruv1i.pdf',
+    'https://res.cloudinary.com/oigatech-cloud/raw/upload/v1748440397/main-badges/dtj5xbknog27vgxaokln.pdf',
   press:
-    'https://res.cloudinary.com/oigatech-cloud/raw/upload/v1747721815/main-badges/hld4id2i4twfybilnotn.pdf',
+    'https://res.cloudinary.com/oigatech-cloud/raw/upload/v1748440370/main-badges/wigegtj4fqcgemop1df1.pdf',
   organizer:
-    'https://res.cloudinary.com/oigatech-cloud/raw/upload/v1747721840/main-badges/dupqyzzinyccxhnfvdct.pdf',
+    'https://res.cloudinary.com/oigatech-cloud/raw/upload/v1748440383/main-badges/nodz1us7e5i7nxcezkb4.pdf',
 };
 
 @Injectable()
