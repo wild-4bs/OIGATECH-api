@@ -319,7 +319,7 @@ export class PdfService {
     const mailOptions = {
       from: 'oigatech.iraq2025@gmail.com',
       to: user.email,
-      subject: 'Your IQDEX 2025 Entry Badge',
+      subject: 'Your OIGATECH 2025 Entry Badge',
       text: `Hello,
 Your OIGATECH 2025 entry badge is ready.
 
