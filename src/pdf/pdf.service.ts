@@ -321,7 +321,7 @@ export class PdfService {
       to: user.email,
       subject: 'Your IQDEX 2025 Entry Badge',
       text: `Hello,
-Your IQDEX 2025 entry badge is ready.
+Your OIGATECH 2025 entry badge is ready.
 
 Download the attached badge and show it at the entrance.
 
@@ -329,14 +329,14 @@ Download the attached badge and show it at the entrance.
 
 For inquiries, contact us.
 
-IQDEX 2025 Team
+OIGATECH 2025 Team
 
 مرحبًا،
-باج الدخول لمعرض IQDEX 2025 جاهز.
+باج الدخول لمعرض OIGATECH 2025 جاهز.
 
 حمّل الباج المرفق وأظهره عند الدخول.
 
-📌 ملاحظة: احتفظ به على هاتفك أو اطبعه.
+📌 ملاحظة: احتفظ به على هاتفك أو اطبعه
 `,
       attachments: [
         {
